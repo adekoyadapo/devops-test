@@ -31,6 +31,19 @@ cleanup_cluster() {
     fi
 }
 
+verify_deployment() {
+    echo -e "\033[32mVerifying deployment...\033[0m\n"
+    sleep 30
+    response=$(curl -s http://localhost:$hostport | sed -n 's:.*<h1>\(.*\)</h1>.*:\1:p')
+    if [[ "$response" == "Hello World" ]]; then
+        echo -e "\033[32mDeployment verification succeeded: Hello World found in response.\033[0m\n"
+    else
+        echo -e "\033[31mDeployment verification failed: Expected 'Hello World', but got '$response'.\033[0m\n"
+        exit 1
+    fi
+}
+
+
 if [[ $1 == "cleanup" ]]; then
   cleanup_cluster "$1"
 else 
@@ -83,4 +96,7 @@ else
    envsubst < app-config.yml | kubectl apply -f -
    echo
    echo -e "Deployment Completed... Access the application at http://localhost:$hostport\n"
+
+   # Verify the deployment
+   verify_deployment
 fi
